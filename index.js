@@ -19,6 +19,7 @@ async function run() {
     await client.connect();
     const toolCollection = client.db('manufacturer').collection('tools');
     const orderCollection = client.db('manufacturer').collection('orders');
+    const userCollection = client.db('manufacturer').collection('users');
 
     app.post('/orders', async (req, res) => {
       const order = req.body;
@@ -27,12 +28,17 @@ async function run() {
       return res.send({ success: true, result });
     });
 
-    app.get('/orders/:email', async (req, res) => {
+    app.put('/user/:email', async (req, res) => {
       const email = req.params.email;
+      const user = req.body;
       const filter = { email: email };
-      const cursor = orderCollection.find(filter);
-      const orders = await cursor.toArray();
-      res.send(orders);
+      const option = { upsert: true };
+      const updateDoc = {
+        $set: user
+      };
+      const result = await userCollection.updateOne(filter, updateDoc, option);
+      const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
+      res.send({ result, token });
     });
 
     app.get('/tools', async (req, res) => {
