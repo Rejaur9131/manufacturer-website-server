@@ -28,6 +28,14 @@ async function run() {
       return res.send({ success: true, result });
     });
 
+    app.get('/orders/:email', async (req, res) => {
+      const email = req.params.email;
+      const filter = { email: email };
+      const cursor = orderCollection.find(filter);
+      const orders = await cursor.toArray();
+      res.send(orders);
+    });
+
     app.put('/user/:email', async (req, res) => {
       const email = req.params.email;
       const user = req.body;
