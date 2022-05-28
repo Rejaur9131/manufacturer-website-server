@@ -18,6 +18,22 @@ async function run() {
   try {
     await client.connect();
     const toolCollection = client.db('manufacturer').collection('tools');
+    const orderCollection = client.db('manufacturer').collection('orders');
+
+    app.post('/orders', async (req, res) => {
+      const order = req.body;
+      const query = { order };
+      const result = await orderCollection.insertOne(order);
+      return res.send({ success: true, result });
+    });
+
+    app.get('/orders/:email', async (req, res) => {
+      const email = req.params.email;
+      const filter = { email: email };
+      const cursor = orderCollection.find(filter);
+      const orders = await cursor.toArray();
+      res.send(orders);
+    });
 
     app.get('/tools', async (req, res) => {
       const query = {};
