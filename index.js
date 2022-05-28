@@ -28,12 +28,34 @@ async function run() {
       return res.send({ success: true, result });
     });
 
+    app.get('/orders/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const order = await orderCollection.findOne(query);
+      res.send(order);
+    });
+
     app.get('/orders/:email', async (req, res) => {
       const email = req.params.email;
       const filter = { email: email };
       const cursor = orderCollection.find(filter);
       const orders = await cursor.toArray();
       res.send(orders);
+    });
+    app.get('/user', async (req, res) => {
+      const users = await userCollection.find().toArray();
+      res.send(users);
+    });
+
+    app.put('/user/admin/:email', async (req, res) => {
+      const email = req.params.email;
+
+      const filter = { email: email };
+      const updateDoc = {
+        $set: { role: 'admin' }
+      };
+      const result = await userCollection.updateOne(filter, updateDoc);
+      res.send({ result });
     });
 
     app.put('/user/:email', async (req, res) => {
