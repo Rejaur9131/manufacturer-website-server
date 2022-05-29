@@ -7,7 +7,12 @@ const port = process.env.PORT || 5000;
 const app = express();
 
 // Middleware
-app.use(cors());
+
+const corsConfig = {
+  origin: 'https://manufacturing-site.web.app',
+  credentials: true
+};
+app.use(cors(corsConfig));
 app.use(express.json());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.pjo3h.mongodb.net/?retryWrites=true&w=majority`;
@@ -17,6 +22,7 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 async function run() {
   try {
     await client.connect();
+
     const toolCollection = client.db('manufacturer').collection('tools');
     const orderCollection = client.db('manufacturer').collection('orders');
     const userCollection = client.db('manufacturer').collection('users');
@@ -24,7 +30,7 @@ async function run() {
     app.post('/orders', async (req, res) => {
       const order = req.body;
       const query = { order };
-      const result = await orderCollection.insertOne(order);
+      const result = await orderCollection.insertOne(query);
       return res.send({ success: true, result });
     });
 
@@ -49,7 +55,6 @@ async function run() {
 
     app.put('/user/admin/:email', async (req, res) => {
       const email = req.params.email;
-
       const filter = { email: email };
       const updateDoc = {
         $set: { role: 'admin' }
@@ -85,10 +90,11 @@ async function run() {
       res.send(toolItem);
     });
   } finally {
+    //
   }
 }
 
-run().catch(console.dir());
+run().catch(console.dir);
 
 app.get('/', (req, res) => {
   res.send('Welcome to my Manufacturing Site');
